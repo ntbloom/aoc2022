@@ -10,8 +10,7 @@ import (
 
 func TestGetFileName(t *testing.T) {
 	day := 24
-	puzzle := 3
-	actual, err := parser.GetFileName(day, puzzle, parser.TestInputsDirectory)
+	actual, err := parser.GetFileName(day, parser.TestInputsDirectory)
 	if err != nil {
 		t.Error(err)
 	}
@@ -19,7 +18,7 @@ func TestGetFileName(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	expected := fmt.Sprintf("%s/test_inputs/%d-%d", dir, day, puzzle)
+	expected := fmt.Sprintf("%s/test_inputs/%d", dir, day)
 	if expected != actual {
 		t.Errorf("wanted %s, got %s", expected, actual)
 	}

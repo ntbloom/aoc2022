@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/ntbloom/aoc2022/errors"
 )
+
+const DayNotFound = -1
+const FileNotExists = -2
+const FileOpeningError = -3
 
 const InputsDirectory = "inputs"
 const TestInputsDirectory = "test_inputs"
@@ -21,10 +23,10 @@ func ParseFlags() (int, int, *os.File) {
 
 	if *day == -1 {
 		fmt.Println("Must provide day!")
-		os.Exit(errors.DayNotFound)
+		os.Exit(DayNotFound)
 	}
 
-	filename, err := GetFileName(*day, *puzzle, InputsDirectory)
+	filename, err := GetFileName(*day, InputsDirectory)
 	if err != nil {
 		panic(err)
 	}
@@ -38,24 +40,23 @@ func ParseFlags() (int, int, *os.File) {
 func GetFileDescriptor(filename string) *os.File {
 	if _, err := os.Stat(filename); err != nil {
 		fmt.Printf("File %s does not exist\n", filename)
-		os.Exit(errors.FileNotExists)
+		os.Exit(FileNotExists)
 	}
 
 	fd, err := os.Open(filename)
 	if err != nil {
 		fmt.Printf("Error opening file %s: %s\n", filename, err)
-		os.Exit(errors.FileOpeningError)
+		os.Exit(FileOpeningError)
 	}
 	return fd
 }
 
 // GetFileName gets a filename for a puzzle and string
-func GetFileName(day, puzzle int, directory string) (string, error) {
+func GetFileName(day int, directory string) (string, error) {
 	path, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
-
-	name := fmt.Sprintf("%d-%d", day, puzzle)
+	name := fmt.Sprintf("%d", day)
 	return filepath.Join(path, directory, name), nil
 }
