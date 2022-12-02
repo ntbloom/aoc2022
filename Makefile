@@ -14,4 +14,7 @@ run:
 lint:
 	golangci-lint run
 
+clean:
+	-rm $(EXE)
+
 all: test build run
