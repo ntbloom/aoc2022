@@ -18,6 +18,8 @@ func NewSolution(day int, fd *os.File) Solution {
 		s = days.CreateOne(fd)
 	case 2:
 		s = days.CreateTwo(fd)
+	case 3:
+		s = days.CreateThree(fd)
 	default:
 		panic("must provide valid solution day!")
 	}
