@@ -36,6 +36,7 @@ func TestRegressions(t *testing.T) {
 		1: {71780, 212489},
 		2: {11150, 8295},
 		3: {7701, 2644},
+		4: {513, 878},
 	}
 	for day, solutions := range regressions {
 		for i, v := range []int{1, 2} {
@@ -86,4 +87,12 @@ func TestThree_Solve1(t *testing.T) {
 
 func TestThree_Solve2(t *testing.T) {
 	generateTest(3, 2, 70, t)
+}
+
+func TestFour_Solve1(t *testing.T) {
+	generateTest(4, 1, 2, t)
+}
+
+func TestFour_Solve2(t *testing.T) {
+	generateTest(4, 2, 4, t)
 }

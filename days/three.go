@@ -2,13 +2,8 @@ package days
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 )
-
-type Three struct {
-	fd *os.File
-}
 
 var priorities = map[string]int{
 	"a": 1,
@@ -65,6 +60,10 @@ var priorities = map[string]int{
 	"Z": 52,
 }
 
+type Three struct {
+	fd *os.File
+}
+
 func CreateThree(fd *os.File) *Three {
 	return &Three{fd}
 }
@@ -96,8 +95,6 @@ func (three *Three) solve2() interface{} {
 	buffer := make([]string, 3)
 	counter := 0
 	priority := 0
-	groups := 0
-	var last, penultimate, penpenultimate string
 	for scanner.Scan() {
 		buffer[counter] = scanner.Text()
 
@@ -111,19 +108,14 @@ func (three *Three) solve2() interface{} {
 				panic("can't find common element")
 			}
 			priority += addition
-			penpenultimate = buffer[0]
-			penultimate = buffer[1]
-			last = buffer[2]
 			buffer[0] = ""
 			buffer[1] = ""
 			buffer[2] = ""
 			counter = 0
-			groups += 1
 			continue
 		}
 		counter++
 	}
-	fmt.Println(last, penultimate, penpenultimate, groups)
 	if counter != 0 {
 		panic("miscounted!")
 	}
@@ -153,7 +145,7 @@ func FindCommonsInTwo(str1, str2 string) *[]string {
 	}
 	for _, v := range str2 {
 		asStr := string(v)
-		if exists(asStr, maps) && maps[asStr] != true {
+		if exists(asStr, maps) && !maps[asStr] {
 			maps[asStr] = true
 			common += 1
 		}
@@ -161,7 +153,7 @@ func FindCommonsInTwo(str1, str2 string) *[]string {
 	result := make([]string, common)
 	i := 0
 	for key, val := range maps {
-		if val == true {
+		if val {
 			result[i] = key
 			i++
 		}
@@ -194,7 +186,7 @@ func FindCommonsInThree(str1, str2, str3 string) *string {
 
 	for _, v := range str3 {
 		asStr := string(v)
-		if exists(asStr, maps) && maps[asStr] == true {
+		if exists(asStr, maps) && maps[asStr] {
 			common := &asStr
 			if len(*common) != 1 {
 				panic("should only be a single char")
