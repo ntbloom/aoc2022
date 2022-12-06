@@ -25,3 +25,17 @@ func TestParseCrates(t *testing.T) {
 		}
 	}
 }
+
+func TestGetLastNumberFromString(t *testing.T) {
+
+	for input, expected := range map[string]int{
+		"1   2   3   4   5   6   7   8   9\n":      9,
+		"1   2   3\n":                              3,
+		"1   2   3   4   5   6   7   8   9   10\n": 10,
+	} {
+		answer := days.GetLastNumberFromString(input)
+		if answer != expected {
+			t.Errorf("wanted %d, got %d", expected, answer)
+		}
+	}
+}

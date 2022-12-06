@@ -6,8 +6,12 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
+
+const AsciiOne = 49
+const AsciiNewline = 0x0A
 
 type Five struct {
 	fd     *os.File
@@ -16,13 +20,26 @@ type Five struct {
 
 type Stacks struct {
 	Size     int
-	Elements *[]list.List
+	Elements []*list.List
 }
 
 func NewStacks(size int, fd *os.File) *Stacks {
 	scanner := bufio.NewScanner(fd)
-	stacks := make([]list.List, size)
-	re := regexp.MustCompile(`\[([A-Z])\[*`)
+	reader := bufio.NewReader(fd)
+	_, err := reader.ReadBytes(AsciiOne)
+	if err != nil {
+		panic(err)
+	}
+	nextLine, err := reader.ReadString(AsciiNewline)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(nextLine)
+
+	stacks := make([]*list.List, size)
+	for i := 0; i < size; i++ {
+		stacks[i] = list.New()
+	}
 	for scanner.Scan() {
 		line := scanner.Text()
 		if strings.Contains(line, "1") {
@@ -33,15 +50,17 @@ func NewStacks(size int, fd *os.File) *Stacks {
 			// goto movement parser
 			return nil
 		}
-		matches := re.FindAllString(line, size)
-
-		//matches := strings.Split(scanner.Text(), "  ")
-		fmt.Println(matches)
+		matches := ParseCrates(line, size)
+		for idx, item := range *matches {
+			if item != "" {
+				stacks[idx].PushBack(item)
+			}
+		}
 	}
 
 	return &Stacks{
 		Size:     size,
-		Elements: &stacks,
+		Elements: stacks,
 	}
 }
 
@@ -61,7 +80,7 @@ func (five *Five) Solve(puzzle int) interface{} {
 }
 
 func (five *Five) solve1() interface{} {
-	stacks := NewStacks(3, five.fd)
+	stacks := NewStacks(9, five.fd)
 	fmt.Println(stacks)
 	return nil
 }
@@ -84,4 +103,14 @@ func ParseCrates(line string, length int) *[]string {
 	}
 
 	return &matches
+}
+
+func GetLastNumberFromString(line string) int {
+	re := regexp.MustCompile(`(\d+)`)
+	res := re.FindAllString(line, -1)
+	val, err := strconv.Atoi(res[len(res)-1])
+	if err != nil {
+		panic(err)
+	}
+	return val
 }
