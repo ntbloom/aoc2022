@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/ntbloom/aoc2022/parser"
 )
 
 const AsciiOne = 49
@@ -16,6 +18,7 @@ const AsciiNewline = 0x0A
 type Five struct {
 	fd     *os.File
 	stacks *Stacks
+	size   int
 }
 
 type Stacks struct {
@@ -23,19 +26,9 @@ type Stacks struct {
 	Elements []*list.List
 }
 
-func NewStacks(size int, fd *os.File) *Stacks {
-	scanner := bufio.NewScanner(fd)
-	reader := bufio.NewReader(fd)
-	_, err := reader.ReadBytes(AsciiOne)
-	if err != nil {
-		panic(err)
-	}
-	nextLine, err := reader.ReadString(AsciiNewline)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(nextLine)
+func NewStacks(fd *os.File, size int) *Stacks {
 
+	scanner := bufio.NewScanner(fd)
 	stacks := make([]*list.List, size)
 	for i := 0; i < size; i++ {
 		stacks[i] = list.New()
@@ -43,12 +36,11 @@ func NewStacks(size int, fd *os.File) *Stacks {
 	for scanner.Scan() {
 		line := scanner.Text()
 		if strings.Contains(line, "1") {
-			// goto line counter
-			return nil
+			continue
 		}
 		if strings.Contains(line, "m") {
-			// goto movement parser
-			return nil
+			// TODO: goto movement parser
+			continue
 		}
 		matches := ParseCrates(line, size)
 		for idx, item := range *matches {
@@ -65,7 +57,26 @@ func NewStacks(size int, fd *os.File) *Stacks {
 }
 
 func CreateFive(fd *os.File) *Five {
-	return &Five{fd, nil}
+	newFd := parser.GetFileDescriptor(fd.Name())
+	reader := bufio.NewReader(newFd)
+	defer func() {
+		err := newFd.Close()
+		if err != nil {
+			panic(err)
+		}
+	}()
+	_, err := reader.ReadBytes(AsciiOne)
+	if err != nil {
+		panic(err)
+	}
+	nextLine, err := reader.ReadString(AsciiNewline)
+	reader.Reset(fd)
+	if err != nil {
+		panic(err)
+	}
+	size := GetLastNumberFromString(nextLine)
+
+	return &Five{fd, nil, size}
 }
 
 func (five *Five) Solve(puzzle int) interface{} {
@@ -80,7 +91,7 @@ func (five *Five) Solve(puzzle int) interface{} {
 }
 
 func (five *Five) solve1() interface{} {
-	stacks := NewStacks(9, five.fd)
+	stacks := NewStacks(five.fd, five.size)
 	fmt.Println(stacks)
 	return nil
 }
