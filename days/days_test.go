@@ -96,3 +96,7 @@ func TestFour_Solve1(t *testing.T) {
 func TestFour_Solve2(t *testing.T) {
 	generateTest(4, 2, 4, t)
 }
+
+func TestFive_Solve1(t *testing.T) {
+	generateTest(5, 1, "CMZ", t)
+}
