@@ -39,3 +39,19 @@ func TestGetLastNumberFromString(t *testing.T) {
 		}
 	}
 }
+
+func TestGetMovements(t *testing.T) {
+	for input, expected := range map[string][]int{
+
+		"move 1 from 2 to 1": {1, 2, 1},
+		"move 3 from 1 to 3": {3, 1, 3},
+		"move 2 from 2 to 1": {2, 2, 1},
+		"move 1 from 1 to 2": {1, 1, 2},
+	} {
+		actual := days.GetMovements(input)
+		if !reflect.DeepEqual(expected, actual) {
+			t.Errorf("wanted %d, got %d", expected, actual)
+		}
+
+	}
+}

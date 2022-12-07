@@ -3,6 +3,7 @@ package days
 import (
 	"bufio"
 	"container/list"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -13,6 +14,8 @@ import (
 
 const AsciiOne = 49
 const AsciiNewline = 0x0A
+
+var re *regexp.Regexp = regexp.MustCompile(`(\d+)`)
 
 type Five struct {
 	fd     *os.File
@@ -141,4 +144,20 @@ func GetLastNumberFromString(line string) int {
 		panic(err)
 	}
 	return val
+}
+
+func GetMovements(line string) []int {
+	res := re.FindAllString(line, -1)
+	numbers := make([]int, 3)
+	if len(res) != 3 {
+		log.Panicf("expected 3, got %d", len(res))
+	}
+	for idx, val := range res {
+		num, err := strconv.Atoi(val)
+		if err != nil {
+			panic(err)
+		}
+		numbers[idx] = num
+	}
+	return numbers
 }
