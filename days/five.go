@@ -3,7 +3,6 @@ package days
 import (
 	"bufio"
 	"container/list"
-	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -26,9 +25,21 @@ type Stacks struct {
 	Elements []*list.List
 }
 
-func NewStacks(fd *os.File, size int) *Stacks {
+func (five *Five) newStacks(size int) *Stacks {
 
-	scanner := bufio.NewScanner(fd)
+	scanner := bufio.NewScanner(five.fd)
+	defer func(fd *os.File) {
+		err := fd.Close()
+		if err != nil {
+			panic(err)
+		}
+		newFd, err := os.Open(five.fd.Name())
+		if err != nil {
+			panic(err)
+		}
+		five.fd = newFd
+	}(five.fd)
+
 	stacks := make([]*list.List, size)
 	for i := 0; i < size; i++ {
 		stacks[i] = list.New()
@@ -36,11 +47,7 @@ func NewStacks(fd *os.File, size int) *Stacks {
 	for scanner.Scan() {
 		line := scanner.Text()
 		if strings.Contains(line, "1") {
-			continue
-		}
-		if strings.Contains(line, "m") {
-			// TODO: goto movement parser
-			continue
+			break
 		}
 		matches := ParseCrates(line, size)
 		for idx, item := range *matches {
@@ -57,6 +64,38 @@ func NewStacks(fd *os.File, size int) *Stacks {
 }
 
 func CreateFive(fd *os.File) *Five {
+	size := getCount(fd)
+	return &Five{fd, nil, size}
+}
+
+func (five *Five) Solve(puzzle int) interface{} {
+	if puzzle == 1 {
+		return five.solve1()
+	}
+	if puzzle == 2 {
+		return five.solve2()
+	}
+
+	return nil
+}
+
+func (five *Five) solve1() interface{} {
+	five.stacks = five.newStacks(five.size)
+	scanner := bufio.NewScanner(five.fd)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if !strings.HasPrefix(line, "move") {
+			continue
+		}
+
+	}
+	return nil
+}
+func (five *Five) solve2() interface{} {
+	panic("implement me")
+}
+
+func getCount(fd *os.File) int {
 	newFd := parser.GetFileDescriptor(fd.Name())
 	reader := bufio.NewReader(newFd)
 	defer func() {
@@ -75,30 +114,8 @@ func CreateFive(fd *os.File) *Five {
 		panic(err)
 	}
 	size := GetLastNumberFromString(nextLine)
-
-	return &Five{fd, nil, size}
+	return size
 }
-
-func (five *Five) Solve(puzzle int) interface{} {
-	if puzzle == 1 {
-		return five.solve1()
-	}
-	if puzzle == 2 {
-		return five.solve2()
-	}
-
-	return nil
-}
-
-func (five *Five) solve1() interface{} {
-	stacks := NewStacks(five.fd, five.size)
-	fmt.Println(stacks)
-	return nil
-}
-func (five *Five) solve2() interface{} {
-	panic("implement me")
-}
-
 func ParseCrates(line string, length int) *[]string {
 	matches := make([]string, length)
 	charCount := 0
