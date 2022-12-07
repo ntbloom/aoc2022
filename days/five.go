@@ -100,6 +100,10 @@ func (five *Five) solve1() interface{} {
 			}
 		}
 	}
+	return five.getTopmost()
+}
+
+func (five *Five) getTopmost() string {
 	builder := strings.Builder{}
 	for i := 0; i < five.size; i++ {
 		var topmost string
@@ -114,11 +118,39 @@ func (five *Five) solve1() interface{} {
 		}
 		builder.WriteString(topmost)
 	}
-
 	return builder.String()
 }
+
 func (five *Five) solve2() interface{} {
-	panic("implement me")
+
+	five.stacks = five.newStacks(five.size)
+	scanner := bufio.NewScanner(five.fd)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if !strings.HasPrefix(line, "move") {
+			continue
+		}
+		movements := GetMovements(line)
+		count := movements[0]
+		popTarget := movements[1]
+		pushTarget := movements[2]
+
+		// get the group of items this time
+		items := five.stacks[popTarget][0:count]
+
+		// remove it from the src
+		five.stacks[popTarget] = five.stacks[popTarget][count:]
+
+		// TODO: find out why the 2nd stack is getting written over on the first pass
+
+		// add it to dest
+		if len(five.stacks[pushTarget]) == 0 {
+			five.stacks[pushTarget] = items
+		} else {
+			five.stacks[pushTarget] = append(items, five.stacks[pushTarget]...)
+		}
+	}
+	return five.getTopmost()
 }
 
 func getCount(fd *os.File) int {
