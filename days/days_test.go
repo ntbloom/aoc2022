@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ntbloom/aoc2022/days"
+
 	"github.com/ntbloom/aoc2022/parser"
 	"github.com/ntbloom/aoc2022/solution"
 )
@@ -37,6 +39,7 @@ func TestRegressions(t *testing.T) {
 		2: {11150, 8295},
 		3: {7701, 2644},
 		4: {513, 878},
+		6: {1578, 2178},
 	}
 	for day, solutions := range regressions {
 		for i, v := range []int{1, 2} {
@@ -95,4 +98,32 @@ func TestFour_Solve1(t *testing.T) {
 
 func TestFour_Solve2(t *testing.T) {
 	generateTest(4, 2, 4, t)
+}
+
+func TestSix_Solve1(t *testing.T) {
+	for input, expected := range map[string]int{
+		"bvwbjplbgvbhsrlpgdmjqwftvncz":      5,
+		"nppdvjthqldpwncqszvftbrmjlhg":      6,
+		"nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg": 10,
+		"zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw":  11,
+	} {
+		actual := days.FindFourInARow(input)
+		if actual != expected {
+			t.Errorf("expected %d, got %d", expected, actual)
+		}
+	}
+}
+func TestSix_Solve2(t *testing.T) {
+	for input, expected := range map[string]int{
+		"mjqjpqmgbljsphdztnvjfqwrcgsmlb":    19,
+		"bvwbjplbgvbhsrlpgdmjqwftvncz":      23,
+		"nppdvjthqldpwncqszvftbrmjlhg":      23,
+		"nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg": 29,
+		"zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw":  26,
+	} {
+		actual := days.FindFourteenInARow(input)
+		if actual != expected {
+			t.Errorf("expected %d, got %d", expected, actual)
+		}
+	}
 }

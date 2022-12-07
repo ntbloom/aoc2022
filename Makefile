@@ -16,5 +16,6 @@ lint:
 
 clean:
 	-rm $(EXE)
+	go clean -testcache
 
 all: test build run
