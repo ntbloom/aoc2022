@@ -82,23 +82,37 @@ func (five *Five) solve1() interface{} {
 		}
 		movements := GetMovements(line)
 		count := movements[0]
-		popTarget := five.stacks[movements[1]]
-		pushTarget := five.stacks[movements[2]]
+		popTarget := movements[1]
+		pushTarget := movements[2]
 
 		for i := count; i > 0; i-- {
 			// get the item
-			item := popTarget[0]
+			item := five.stacks[popTarget][0]
 
 			// remove it from the src
-			five.stacks[movements[1]] = popTarget[1:]
+			five.stacks[movements[1]] = five.stacks[popTarget][1:]
 
 			// add it to dest
-			five.stacks[movements[2]] = append([]string{item}, pushTarget...)
+			if len(five.stacks[pushTarget]) == 0 {
+				five.stacks[pushTarget] = []string{item}
+			} else {
+				five.stacks[pushTarget] = append([]string{item}, five.stacks[pushTarget]...)
+			}
 		}
 	}
 	builder := strings.Builder{}
 	for i := 0; i < five.size; i++ {
-		builder.WriteString(five.stacks[i][:len(five.stacks[i])-1][0])
+		var topmost string
+		target := five.stacks[i]
+		switch len(target) {
+		case 0:
+			panic("didn't expect empty")
+		case 1:
+			topmost = target[0]
+		default:
+			topmost = target[:len(target)-1][0]
+		}
+		builder.WriteString(topmost)
 	}
 
 	return builder.String()

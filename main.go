@@ -20,6 +20,6 @@ func main() {
 
 	solver := solution.NewSolution(day, fd)
 	answer := solver.Solve(puzzle)
-	fmt.Printf("Solution for day %d, puzzle %d: %d", day, puzzle, answer)
+	fmt.Printf("Solution for day %d, puzzle %d: %d\n", day, puzzle, answer)
 
 }
