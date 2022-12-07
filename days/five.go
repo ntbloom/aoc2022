@@ -87,11 +87,13 @@ func (five *Five) solve1() interface{} {
 
 		for i := count; i > 0; i-- {
 			// get the item
-			item := popTarget[len(popTarget)-1:][0]
+			item := popTarget[0]
+
 			// remove it from the src
-			five.stacks[movements[1]] = popTarget[:len(popTarget)-1]
+			five.stacks[movements[1]] = popTarget[1:]
+
 			// add it to dest
-			five.stacks[movements[2]] = append(pushTarget, item)
+			five.stacks[movements[2]] = append([]string{item}, pushTarget...)
 		}
 	}
 	builder := strings.Builder{}
