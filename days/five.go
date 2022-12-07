@@ -139,9 +139,7 @@ func (five *Five) solve2() interface{} {
 		items := five.stacks[popTarget][0:count]
 
 		// remove it from the src
-		five.stacks[popTarget] = five.stacks[popTarget][count:]
-
-		// TODO: find out why the 2nd stack is getting written over on the first pass
+		five.stacks[popTarget] = append([]string{}, five.stacks[popTarget][count:]...)
 
 		// add it to dest
 		if len(five.stacks[pushTarget]) == 0 {
