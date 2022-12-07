@@ -39,6 +39,7 @@ func TestRegressions(t *testing.T) {
 		2: {11150, 8295},
 		3: {7701, 2644},
 		4: {513, 878},
+		5: {"SBPQRSCDF", "RGLVRCQSB"},
 		6: {1578, 2178},
 	}
 	for day, solutions := range regressions {
@@ -98,6 +99,13 @@ func TestFour_Solve1(t *testing.T) {
 
 func TestFour_Solve2(t *testing.T) {
 	generateTest(4, 2, 4, t)
+}
+
+func TestFive_Solve1(t *testing.T) {
+	generateTest(5, 1, "CMZ", t)
+}
+func TestFive_Solve2(t *testing.T) {
+	generateTest(5, 2, "MCD", t)
 }
 
 func TestSix_Solve1(t *testing.T) {
