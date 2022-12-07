@@ -3,6 +3,7 @@ package days
 import (
 	"bufio"
 	"container/list"
+	"fmt"
 	"log"
 	"os"
 	"regexp"
@@ -15,7 +16,7 @@ import (
 const AsciiOne = 49
 const AsciiNewline = 0x0A
 
-var re *regexp.Regexp = regexp.MustCompile(`(\d+)`)
+var movementRegex *regexp.Regexp = regexp.MustCompile(`(\d+)`)
 
 type Five struct {
 	fd     *os.File
@@ -26,6 +27,16 @@ type Five struct {
 type Stacks struct {
 	Size     int
 	Elements []*list.List
+}
+
+func (s *Stacks) getLastElements() *[]any {
+	result := make([]any, s.Size)
+	for idx, val := range s.Elements {
+		last := val.Back().Value
+		result[idx] = last
+
+	}
+	return &result
 }
 
 func (five *Five) newStacks(size int) *Stacks {
@@ -90,8 +101,20 @@ func (five *Five) solve1() interface{} {
 		if !strings.HasPrefix(line, "move") {
 			continue
 		}
+		movements := GetMovements(line)
+		count := movements[0]
+		popStack := movements[1]
+		pushStack := movements[2]
 
+		for i := count; i > 0; i-- {
+			item := five.stacks.Elements[popStack].Back()
+			five.stacks.Elements[popStack].Remove(item)
+			five.stacks.Elements[pushStack].PushBack(item)
+			fmt.Println(five.stacks.Elements)
+		}
 	}
+
+	fmt.Println(five.stacks.getLastElements())
 	return nil
 }
 func (five *Five) solve2() interface{} {
@@ -147,7 +170,7 @@ func GetLastNumberFromString(line string) int {
 }
 
 func GetMovements(line string) []int {
-	res := re.FindAllString(line, -1)
+	res := movementRegex.FindAllString(line, -1)
 	numbers := make([]int, 3)
 	if len(res) != 3 {
 		log.Panicf("expected 3, got %d", len(res))
@@ -156,6 +179,10 @@ func GetMovements(line string) []int {
 		num, err := strconv.Atoi(val)
 		if err != nil {
 			panic(err)
+		}
+		// use zero-based index for the stack list
+		if idx != 0 {
+			num--
 		}
 		numbers[idx] = num
 	}
