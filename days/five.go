@@ -2,8 +2,6 @@ package days
 
 import (
 	"bufio"
-	"container/list"
-	"fmt"
 	"log"
 	"os"
 	"regexp"
@@ -20,26 +18,11 @@ var movementRegex *regexp.Regexp = regexp.MustCompile(`(\d+)`)
 
 type Five struct {
 	fd     *os.File
-	stacks *Stacks
+	stacks map[int][]string
 	size   int
 }
 
-type Stacks struct {
-	Size     int
-	Elements []*list.List
-}
-
-func (s *Stacks) getLastElements() *[]any {
-	result := make([]any, s.Size)
-	for idx, val := range s.Elements {
-		last := val.Back().Value
-		result[idx] = last
-
-	}
-	return &result
-}
-
-func (five *Five) newStacks(size int) *Stacks {
+func (five *Five) newStacks(size int) map[int][]string {
 
 	scanner := bufio.NewScanner(five.fd)
 	defer func(fd *os.File) {
@@ -54,9 +37,9 @@ func (five *Five) newStacks(size int) *Stacks {
 		five.fd = newFd
 	}(five.fd)
 
-	stacks := make([]*list.List, size)
+	stacks := make(map[int][]string, size)
 	for i := 0; i < size; i++ {
-		stacks[i] = list.New()
+		stacks[i] = []string{}
 	}
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -66,15 +49,11 @@ func (five *Five) newStacks(size int) *Stacks {
 		matches := ParseCrates(line, size)
 		for idx, item := range *matches {
 			if item != "" {
-				stacks[idx].PushBack(item)
+				stacks[idx] = append(stacks[idx], item)
 			}
 		}
 	}
-
-	return &Stacks{
-		Size:     size,
-		Elements: stacks,
-	}
+	return stacks
 }
 
 func CreateFive(fd *os.File) *Five {
@@ -103,19 +82,24 @@ func (five *Five) solve1() interface{} {
 		}
 		movements := GetMovements(line)
 		count := movements[0]
-		popStack := movements[1]
-		pushStack := movements[2]
+		popTarget := five.stacks[movements[1]]
+		pushTarget := five.stacks[movements[2]]
 
 		for i := count; i > 0; i-- {
-			item := five.stacks.Elements[popStack].Back()
-			five.stacks.Elements[popStack].Remove(item)
-			five.stacks.Elements[pushStack].PushBack(item)
-			fmt.Println(five.stacks.Elements)
+			// get the item
+			item := popTarget[len(popTarget)-1:][0]
+			// remove it from the src
+			five.stacks[movements[1]] = popTarget[:len(popTarget)-1]
+			// add it to dest
+			five.stacks[movements[2]] = append(pushTarget, item)
 		}
 	}
+	builder := strings.Builder{}
+	for i := 0; i < five.size; i++ {
+		builder.WriteString(five.stacks[i][:len(five.stacks[i])-1][0])
+	}
 
-	fmt.Println(five.stacks.getLastElements())
-	return nil
+	return builder.String()
 }
 func (five *Five) solve2() interface{} {
 	panic("implement me")
