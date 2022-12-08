@@ -41,6 +41,7 @@ func TestRegressions(t *testing.T) {
 		4: {513, 878},
 		5: {"SBPQRSCDF", "RGLVRCQSB"},
 		6: {1578, 2178},
+		7: {1642503, 6999588},
 	}
 	for day, solutions := range regressions {
 		for i, v := range []int{1, 2} {
@@ -134,4 +135,13 @@ func TestSix_Solve2(t *testing.T) {
 			t.Errorf("expected %d, got %d", expected, actual)
 		}
 	}
+}
+
+func TestSeven_Solve1(t *testing.T) {
+	generateTest(7, 1, 95437, t)
+
+}
+
+func TestSeven_Solve2(t *testing.T) {
+	generateTest(7, 2, 24933642, t)
 }

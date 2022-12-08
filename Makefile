@@ -18,4 +18,4 @@ clean:
 	-rm $(EXE)
 	go clean -testcache
 
-all: test build run
+all: clean test build run
