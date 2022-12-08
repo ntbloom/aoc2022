@@ -3,19 +3,19 @@ TESTFLAGS= -cover
 TESTFLAGS+=-race
 
 build:
-	go build
+	@go build
 
 test: lint
-	go test $(TESTFLAGS) ./...
+	@go test $(TESTFLAGS) ./...
 
 run:
-	$(EXE) -day $(day) -puzzle $(puzzle)
+	@$(EXE) -day $(day) -puzzle $(puzzle)
 
 lint:
-	golangci-lint run
+	@golangci-lint run
 
 clean:
-	-rm $(EXE)
-	go clean -testcache
+	@-rm $(EXE)
+	@go clean -testcache
 
 all: clean test build run
