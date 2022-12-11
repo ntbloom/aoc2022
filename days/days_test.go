@@ -14,6 +14,10 @@ import (
 
 func generateTest(day int, puzzle int, expected interface{}, t *testing.T) {
 	filename, err := parser.GetFileName(day, parser.TestInputsDirectory)
+
+	if day == 9 && puzzle == 2 {
+		filename = filename + "-2"
+	}
 	if err != nil {
 		t.Error(err)
 	}
@@ -43,6 +47,7 @@ func TestRegressions(t *testing.T) {
 		6: {1578, 2178},
 		7: {1642503, 6999588},
 		8: {1805, 444528},
+		//9: {5619, nil},
 	}
 	for day, solutions := range regressions {
 		for i, v := range []int{1, 2} {
@@ -153,4 +158,12 @@ func TestEight_Solve1(t *testing.T) {
 
 func TestEightSolve2(t *testing.T) {
 	generateTest(8, 2, 8, t)
+}
+
+func TestNineSolve1(t *testing.T) {
+	generateTest(9, 1, 13, t)
+}
+
+func TestNineSolve2(t *testing.T) {
+	generateTest(9, 2, 36, t)
 }

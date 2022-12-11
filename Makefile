@@ -5,7 +5,7 @@ TESTFLAGS+=-race
 build:
 	@go build
 
-test: lint
+test:
 	@go test $(TESTFLAGS) ./...
 
 run:
