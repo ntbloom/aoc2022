@@ -52,11 +52,13 @@ func (eleven *Eleven) solve1() interface{} {
 func (eleven *Eleven) solve2() interface{} {
 	rounds := 10000
 	for i := 0; i < rounds; i++ {
+		fmt.Printf("\nround %d\n", i+1)
 		for _, m := range eleven.Monkeys {
 			for _, itm := range m.Items {
 				m.inspect2(&itm, eleven)
 			}
 			m.Items = []item{}
+			fmt.Printf("monkey%d: %d\n", m.Number, m.InspectionCount)
 		}
 
 	}
