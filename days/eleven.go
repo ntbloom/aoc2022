@@ -3,7 +3,9 @@ package days
 import (
 	"bufio"
 	"fmt"
+	"math/big"
 	"os"
+	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
@@ -18,7 +20,9 @@ type Eleven struct {
 }
 
 func CreateEleven(fd *os.File) *Eleven {
-	return &Eleven{fd, []*monkey{}}
+	eleven := Eleven{fd, []*monkey{}}
+	eleven.parse()
+	return &eleven
 }
 
 func (eleven *Eleven) Solve(puzzle int) interface{} {
@@ -33,24 +37,43 @@ func (eleven *Eleven) Solve(puzzle int) interface{} {
 }
 
 func (eleven *Eleven) solve1() interface{} {
-	eleven.parse()
 	rounds := 20
 	for i := 0; i < rounds; i++ {
 		for _, m := range eleven.Monkeys {
 			for _, itm := range m.Items {
-				m.inspect(&itm, eleven)
+				m.inspect(&itm, 3, eleven)
 			}
 			m.Items = []item{}
 		}
-		fmt.Println("round ", i+1)
-		//for idx, mky := range eleven.Monkeys {
-		//	fmt.Printf("monkey%d ", idx)
-		//	for _, val := range mky.Items {
-		//		fmt.Printf("%d ", val.WorryLevel)
-		//	}
-		//	fmt.Println()
-		//}
+
 	}
+	return eleven.calculateMonkeyBusiness()
+}
+func (eleven *Eleven) solve2() interface{} {
+	rounds := 10000
+	for i := 0; i < rounds; i++ {
+		for _, m := range eleven.Monkeys {
+			for _, itm := range m.Items {
+				m.inspect(&itm, 1, eleven)
+			}
+			m.Items = []item{}
+		}
+
+	}
+	return eleven.calculateMonkeyBusiness()
+}
+
+func (eleven *Eleven) printMonkeys() {
+	for idx, mky := range eleven.Monkeys {
+		fmt.Printf("monkey%d ", idx)
+		for _, val := range mky.Items {
+			fmt.Printf("%d ", val.WorryLevel)
+		}
+		fmt.Println()
+	}
+}
+
+func (eleven *Eleven) calculateMonkeyBusiness() int {
 	var inspectionCounts []int
 	for _, m := range eleven.Monkeys {
 		inspectionCounts = append(inspectionCounts, m.InspectionCount)
@@ -59,9 +82,6 @@ func (eleven *Eleven) solve1() interface{} {
 	max, penultimate := inspectionCounts[len(inspectionCounts)-1], inspectionCounts[(len(inspectionCounts)-2)]
 	monkeyBusiness := max * penultimate
 	return monkeyBusiness
-}
-func (eleven *Eleven) solve2() interface{} {
-	return nil
 }
 
 func (eleven *Eleven) parse() {
@@ -80,7 +100,7 @@ func (eleven *Eleven) parse() {
 		}
 		if line[2] == "Starting" {
 			for _, num := range line[4:] {
-				currentMonkey.Items = append(currentMonkey.Items, *newItem(getNumber(num)))
+				currentMonkey.Items = append(currentMonkey.Items, *newItem(big.NewInt(int64(getNumber(num)))))
 			}
 			continue
 		}
@@ -90,7 +110,7 @@ func (eleven *Eleven) parse() {
 			continue
 		}
 		if line[2] == "Test:" {
-			currentMonkey.DivisibleBy = getNumber(line[5])
+			currentMonkey.DivisibleBy = big.NewInt(int64(getNumber(line[5])))
 		}
 		if line[5] == "true:" {
 			currentMonkey.TrueMonkey = getNumber(line[9])
@@ -104,13 +124,12 @@ func (eleven *Eleven) parse() {
 }
 
 type item struct {
-	Id            int
-	OriginalLevel int
-	WorryLevel    int
+	Id         int
+	WorryLevel *big.Int
 }
 
-func newItem(worryLevel int) *item {
-	itm := item{Id: itemId, OriginalLevel: worryLevel, WorryLevel: worryLevel}
+func newItem(worryLevel *big.Int) *item {
+	itm := item{Id: itemId, WorryLevel: worryLevel}
 	itemId++
 	return &itm
 }
@@ -120,7 +139,7 @@ type monkey struct {
 	Items            []item
 	Operation        string
 	OperationElement string
-	DivisibleBy      int
+	DivisibleBy      *big.Int
 	TrueMonkey       int
 	FalseMonkey      int
 	InspectionCount  int
@@ -132,25 +151,26 @@ func newMonkey(number int) *monkey {
 		Items:            []item{},
 		Operation:        "",
 		OperationElement: "",
-		DivisibleBy:      -1,
+		DivisibleBy:      big.NewInt(-1),
 		TrueMonkey:       -1,
 		FalseMonkey:      -1,
 		InspectionCount:  0,
 	}
 }
 
-func (m *monkey) inspect(i *item, eleven *Eleven) {
+func (m *monkey) inspect(i *item, divisor int, eleven *Eleven) {
 	m.InspectionCount++
 	i.WorryLevel = m.operate(i.WorryLevel)
-	i.WorryLevel = i.WorryLevel / 3
-	test := i.WorryLevel%m.DivisibleBy == 0
+	i.WorryLevel.Div(i.WorryLevel, big.NewInt(int64(divisor)))
+	var test *big.Int
+	pass := reflect.DeepEqual(test.Mod(i.WorryLevel, m.DivisibleBy), big.NewInt(0))
+	//test := i.WorryLevel%m.DivisibleBy == 0
 
-	if test {
+	if pass {
 		eleven.Monkeys[m.TrueMonkey].Items = append(eleven.Monkeys[m.TrueMonkey].Items, *i)
 	} else {
 		eleven.Monkeys[m.FalseMonkey].Items = append(eleven.Monkeys[m.FalseMonkey].Items, *i)
 	}
-
 }
 
 func getNumber(str string) int {
@@ -162,22 +182,23 @@ func getNumber(str string) int {
 	}
 }
 
-func (m *monkey) operate(worry int) int {
+func (m *monkey) operate(worry *big.Int) *big.Int {
+	var ans *big.Int
 	if m.OperationElement == "old" {
 		if m.Operation == "*" {
-			return worry * worry
+			return ans.Mul(worry, worry)
 		}
 		if m.Operation == "+" {
-			return worry + worry
+			return ans.Add(worry, worry)
 		}
 	}
 
-	num := getNumber(m.OperationElement)
+	num := big.NewInt(int64(getNumber(m.OperationElement)))
 	if m.Operation == "*" {
-		return worry * num
+		return ans.Mul(worry, num)
 	}
 	if m.Operation == "+" {
-		return worry + num
+		return ans.Add(worry, num)
 	}
 	panic("unreachable")
 }
