@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
@@ -162,9 +161,10 @@ func (m *monkey) inspect(i *item, divisor int, eleven *Eleven) {
 	m.InspectionCount++
 	i.WorryLevel = m.operate(i.WorryLevel)
 	i.WorryLevel.Div(i.WorryLevel, big.NewInt(int64(divisor)))
-	var test *big.Int
-	pass := reflect.DeepEqual(test.Mod(i.WorryLevel, m.DivisibleBy), big.NewInt(0))
-	//test := i.WorryLevel%m.DivisibleBy == 0
+
+	res := big.NewInt(0)
+	res.Div(i.WorryLevel, m.DivisibleBy)
+	pass := res.Cmp(big.NewInt(0)) == 0
 
 	if pass {
 		eleven.Monkeys[m.TrueMonkey].Items = append(eleven.Monkeys[m.TrueMonkey].Items, *i)
@@ -183,22 +183,21 @@ func getNumber(str string) int {
 }
 
 func (m *monkey) operate(worry *big.Int) *big.Int {
-	var ans *big.Int
 	if m.OperationElement == "old" {
 		if m.Operation == "*" {
-			return ans.Mul(worry, worry)
+			return worry.Mul(worry, worry)
 		}
 		if m.Operation == "+" {
-			return ans.Add(worry, worry)
+			return worry.Add(worry, worry)
 		}
 	}
 
 	num := big.NewInt(int64(getNumber(m.OperationElement)))
 	if m.Operation == "*" {
-		return ans.Mul(worry, num)
+		return worry.Mul(worry, num)
 	}
 	if m.Operation == "+" {
-		return ans.Add(worry, num)
+		return worry.Add(worry, num)
 	}
 	panic("unreachable")
 }
