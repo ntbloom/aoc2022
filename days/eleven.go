@@ -12,6 +12,9 @@ import (
 )
 
 var itemId int = 0
+var Accumulator = new(big.Int)
+var ModuloChecker = new(big.Int)
+var BigZero = big.NewInt(0)
 
 type Eleven struct {
 	fd      *os.File
@@ -162,16 +165,16 @@ func newMonkey(number int) *monkey {
 
 func (m *monkey) inspect(i *item, divisor *big.Int, eleven *Eleven) {
 	m.InspectionCount++
-	num := big.NewInt(i.WorryLevel.Int64())
+	Accumulator.Set(i.WorryLevel)
 
-	num = m.operate(num)
-	num = num.Div(num, divisor)
+	Accumulator = m.operate(Accumulator)
+	Accumulator = Accumulator.Div(Accumulator, divisor)
 
-	i.WorryLevel = num
+	i.WorryLevel.Set(Accumulator)
 
-	res := big.NewInt(num.Int64())
-	res = res.Mod(num, m.DivisibleBy)
-	pass := res.Cmp(big.NewInt(0)) == 0
+	ModuloChecker.Set(Accumulator)
+	ModuloChecker = ModuloChecker.Mod(ModuloChecker, m.DivisibleBy)
+	pass := ModuloChecker.Cmp(BigZero) == 0
 
 	if pass {
 		eleven.Monkeys[m.TrueMonkey].Items = append(eleven.Monkeys[m.TrueMonkey].Items, *i)
@@ -182,15 +185,15 @@ func (m *monkey) inspect(i *item, divisor *big.Int, eleven *Eleven) {
 
 func (m *monkey) inspect2(i *item, eleven *Eleven) {
 	m.InspectionCount++
-	num := big.NewInt(i.WorryLevel.Int64())
+	Accumulator.Set(i.WorryLevel)
 
-	num = m.operate(num)
+	Accumulator = m.operate(Accumulator)
 
-	i.WorryLevel = num
+	i.WorryLevel.Set(Accumulator)
 
-	res := big.NewInt(num.Int64())
-	res = res.Mod(num, m.DivisibleBy)
-	pass := res.Cmp(big.NewInt(0)) == 0
+	ModuloChecker.Set(Accumulator)
+	ModuloChecker = ModuloChecker.Mod(ModuloChecker, m.DivisibleBy)
+	pass := ModuloChecker.Cmp(BigZero) == 0
 
 	if pass {
 		eleven.Monkeys[m.TrueMonkey].Items = append(eleven.Monkeys[m.TrueMonkey].Items, *i)
