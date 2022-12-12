@@ -12,7 +12,7 @@ import (
 	"github.com/ntbloom/aoc2022/solution"
 )
 
-func generateTest(day int, puzzle int, expected interface{}, t *testing.T) {
+func generateTestSolver(day int, puzzle int, t *testing.T) (solution.Solution, func()) {
 	filename, err := parser.GetFileName(day, parser.TestInputsDirectory)
 
 	if day == 9 && puzzle == 2 {
@@ -22,14 +22,20 @@ func generateTest(day int, puzzle int, expected interface{}, t *testing.T) {
 		t.Error(err)
 	}
 	fd := parser.GetFileDescriptor(filename)
-	defer func(fd *os.File) {
+	s := solution.NewSolution(day, fd)
+
+	closed := func() {
 		err := fd.Close()
 		if err != nil {
 			fmt.Printf("Unable to close test file descriptor %s\n", fd.Name())
 		}
-	}(fd)
+	}
+	return s, closed
+}
 
-	s := solution.NewSolution(day, fd)
+func generateTest(day int, puzzle int, expected interface{}, t *testing.T) {
+	s, closed := generateTestSolver(day, puzzle, t)
+	defer closed()
 
 	actual := s.Solve(puzzle)
 	if actual != expected {
@@ -170,6 +176,6 @@ func TestNineSolve2(t *testing.T) {
 
 // TODO: Day 10!
 
-func TestElevenSolve1(t *testing.T) {
-	generateTest(11, 1, 10605, t)
-}
+//func TestElevenSolve1(t *testing.T) {
+//	generateTest(11, 1, 10605, t)
+//}
