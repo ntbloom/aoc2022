@@ -9,6 +9,7 @@ import (
 )
 
 var itemId int = 0
+var worryLevel int = 0
 
 type Eleven struct {
 	fd      *os.File
@@ -55,10 +56,24 @@ func (eleven *Eleven) parse() {
 		}
 		if line[2] == "Starting" {
 			for _, num := range line[4:] {
-				itm := newItem(getNumber(num))
-				currentMonkey.Items[itm.Id] = itm
+				currentMonkey.Items = append(currentMonkey.Items, newItem(getNumber(num)))
 			}
 			continue
+		}
+		if line[2] == "Operation:" {
+			operator := line[6]
+			element := line[7]
+			currentMonkey.Operation = getOperation(operator, element)
+			continue
+		}
+		if line[2] == "Test:" {
+			currentMonkey.DivisibleBy = getNumber(line[5])
+		}
+		if line[5] == "true:" {
+			currentMonkey.TrueMonkey = getNumber(line[9])
+		}
+		if line[5] == "false:" {
+			currentMonkey.FalseMonkey = getNumber(line[9])
 		}
 	}
 	number := currentMonkey.Number
@@ -84,9 +99,9 @@ func newItem(worryLevel int) *item {
 
 type monkey struct {
 	Number      int
-	Items       map[int]*item
-	Operation   func(old int) int
-	Criteria    func(value int) bool
+	Items       []*item
+	Operation   func(old, other int) int
+	DivisibleBy int
 	TrueMonkey  int
 	FalseMonkey int
 }
@@ -94,9 +109,9 @@ type monkey struct {
 func newMonkey(number int) *monkey {
 	return &monkey{
 		Number:      number,
-		Items:       map[int]*item{},
+		Items:       []*item{},
 		Operation:   nil,
-		Criteria:    nil,
+		DivisibleBy: -1,
 		TrueMonkey:  -1,
 		FalseMonkey: -1,
 	}
@@ -109,4 +124,31 @@ func getNumber(str string) int {
 	} else {
 		return number
 	}
+}
+
+func getOperation(operator, element string) func(int, int) int {
+	if element == "old" {
+		if operator == "*" {
+			return func(one, _ int) int {
+				return one * one
+			}
+		}
+		if operator == "+" {
+			return func(one, _ int) int {
+				return one + one
+			}
+		}
+	}
+	num := getNumber(element)
+	if operator == "*" {
+		return func(one, _ int) int {
+			return one * num
+		}
+	}
+	if operator == "+" {
+		return func(one, _ int) int {
+			return one + num
+		}
+	}
+	panic("unreachable")
 }
