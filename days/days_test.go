@@ -54,6 +54,8 @@ func TestRegressions(t *testing.T) {
 		7: {1642503, 6999588},
 		8: {1805, 444528},
 		9: {5619, 2376},
+		//10: {???,???},
+		//11: {67830, nil},
 	}
 	for day, solutions := range regressions {
 		for i, v := range []int{1, 2} {

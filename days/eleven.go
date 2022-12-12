@@ -38,9 +38,18 @@ func (eleven *Eleven) solve1() interface{} {
 	for i := 0; i < rounds; i++ {
 		for _, m := range eleven.Monkeys {
 			for _, itm := range m.Items {
-				m.inspect(itm)
+				m.inspect(&itm, eleven)
 			}
+			m.Items = []item{}
 		}
+		fmt.Println("round ", i+1)
+		//for idx, mky := range eleven.Monkeys {
+		//	fmt.Printf("monkey%d ", idx)
+		//	for _, val := range mky.Items {
+		//		fmt.Printf("%d ", val.WorryLevel)
+		//	}
+		//	fmt.Println()
+		//}
 	}
 	var inspectionCounts []int
 	for _, m := range eleven.Monkeys {
@@ -71,14 +80,13 @@ func (eleven *Eleven) parse() {
 		}
 		if line[2] == "Starting" {
 			for _, num := range line[4:] {
-				currentMonkey.Items = append(currentMonkey.Items, newItem(getNumber(num)))
+				currentMonkey.Items = append(currentMonkey.Items, *newItem(getNumber(num)))
 			}
 			continue
 		}
 		if line[2] == "Operation:" {
-			operator := line[6]
-			element := line[7]
-			currentMonkey.Operation = getOperation(operator, element)
+			currentMonkey.Operation = line[6]
+			currentMonkey.OperationElement = line[7]
 			continue
 		}
 		if line[2] == "Test:" {
@@ -96,42 +104,53 @@ func (eleven *Eleven) parse() {
 }
 
 type item struct {
-	Id         int
-	WorryLevel int
+	Id            int
+	OriginalLevel int
+	WorryLevel    int
 }
 
 func newItem(worryLevel int) *item {
-	itm := item{Id: itemId, WorryLevel: worryLevel}
+	itm := item{Id: itemId, OriginalLevel: worryLevel, WorryLevel: worryLevel}
 	itemId++
 	return &itm
 }
 
 type monkey struct {
-	Number          int
-	Items           []*item
-	Operation       func(old, other int) int
-	DivisibleBy     int
-	TrueMonkey      int
-	FalseMonkey     int
-	InspectionCount int
+	Number           int
+	Items            []item
+	Operation        string
+	OperationElement string
+	DivisibleBy      int
+	TrueMonkey       int
+	FalseMonkey      int
+	InspectionCount  int
 }
 
 func newMonkey(number int) *monkey {
 	return &monkey{
-		Number:          number,
-		Items:           []*item{},
-		Operation:       nil,
-		DivisibleBy:     -1,
-		TrueMonkey:      -1,
-		FalseMonkey:     -1,
-		InspectionCount: 0,
+		Number:           number,
+		Items:            []item{},
+		Operation:        "",
+		OperationElement: "",
+		DivisibleBy:      -1,
+		TrueMonkey:       -1,
+		FalseMonkey:      -1,
+		InspectionCount:  0,
 	}
 }
 
-func (m *monkey) inspect(i *item) {
+func (m *monkey) inspect(i *item, eleven *Eleven) {
 	m.InspectionCount++
-	fmt.Println(i)
-	//panic("implement me")
+	i.WorryLevel = m.operate(i.WorryLevel)
+	i.WorryLevel = i.WorryLevel / 3
+	test := i.WorryLevel%m.DivisibleBy == 0
+
+	if test {
+		eleven.Monkeys[m.TrueMonkey].Items = append(eleven.Monkeys[m.TrueMonkey].Items, *i)
+	} else {
+		eleven.Monkeys[m.FalseMonkey].Items = append(eleven.Monkeys[m.FalseMonkey].Items, *i)
+	}
+
 }
 
 func getNumber(str string) int {
@@ -143,29 +162,22 @@ func getNumber(str string) int {
 	}
 }
 
-func getOperation(operator, element string) func(int, int) int {
-	if element == "old" {
-		if operator == "*" {
-			return func(one, _ int) int {
-				return one * one
-			}
+func (m *monkey) operate(worry int) int {
+	if m.OperationElement == "old" {
+		if m.Operation == "*" {
+			return worry * worry
 		}
-		if operator == "+" {
-			return func(one, _ int) int {
-				return one + one
-			}
+		if m.Operation == "+" {
+			return worry + worry
 		}
 	}
-	num := getNumber(element)
-	if operator == "*" {
-		return func(one, _ int) int {
-			return one * num
-		}
+
+	num := getNumber(m.OperationElement)
+	if m.Operation == "*" {
+		return worry * num
 	}
-	if operator == "+" {
-		return func(one, _ int) int {
-			return one + num
-		}
+	if m.Operation == "+" {
+		return worry + num
 	}
 	panic("unreachable")
 }
