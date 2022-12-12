@@ -47,7 +47,7 @@ func TestRegressions(t *testing.T) {
 		6: {1578, 2178},
 		7: {1642503, 6999588},
 		8: {1805, 444528},
-		//9: {5619, nil},
+		9: {5619, 2376},
 	}
 	for day, solutions := range regressions {
 		for i, v := range []int{1, 2} {
@@ -166,4 +166,10 @@ func TestNineSolve1(t *testing.T) {
 
 func TestNineSolve2(t *testing.T) {
 	generateTest(9, 2, 36, t)
+}
+
+// TODO: Day 10!
+
+func TestElevenSolve1(t *testing.T) {
+	generateTest(11, 1, 10605, t)
 }
