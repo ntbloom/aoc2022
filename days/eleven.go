@@ -2,7 +2,6 @@ package days
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"regexp"
 	"sort"
@@ -38,18 +37,10 @@ func (eleven *Eleven) solve1() interface{} {
 	for i := 0; i < rounds; i++ {
 		for _, m := range eleven.Monkeys {
 			for _, itm := range m.Items {
-				m.inspect(&itm, eleven)
+				m.inspect1(&itm, eleven)
 			}
 			m.Items = []item{}
 		}
-		fmt.Println("round ", i+1)
-		//for idx, mky := range eleven.Monkeys {
-		//	fmt.Printf("monkey%d ", idx)
-		//	for _, val := range mky.Items {
-		//		fmt.Printf("%d ", val.WorryLevel)
-		//	}
-		//	fmt.Println()
-		//}
 	}
 	var inspectionCounts []int
 	for _, m := range eleven.Monkeys {
@@ -61,7 +52,24 @@ func (eleven *Eleven) solve1() interface{} {
 	return monkeyBusiness
 }
 func (eleven *Eleven) solve2() interface{} {
-	return nil
+	eleven.parse()
+	rounds := 10000
+	for i := 0; i < rounds; i++ {
+		for _, m := range eleven.Monkeys {
+			for _, itm := range m.Items {
+				m.inspect2(&itm, eleven)
+			}
+			m.Items = []item{}
+		}
+	}
+	var inspectionCounts []int
+	for _, m := range eleven.Monkeys {
+		inspectionCounts = append(inspectionCounts, m.InspectionCount)
+	}
+	sort.Ints(inspectionCounts)
+	max, penultimate := inspectionCounts[len(inspectionCounts)-1], inspectionCounts[(len(inspectionCounts)-2)]
+	monkeyBusiness := max * penultimate
+	return monkeyBusiness
 }
 
 func (eleven *Eleven) parse() {
@@ -139,10 +147,22 @@ func newMonkey(number int) *monkey {
 	}
 }
 
-func (m *monkey) inspect(i *item, eleven *Eleven) {
+func (m *monkey) inspect1(i *item, eleven *Eleven) {
 	m.InspectionCount++
 	i.WorryLevel = m.operate(i.WorryLevel)
 	i.WorryLevel = i.WorryLevel / 3
+	test := i.WorryLevel%m.DivisibleBy == 0
+
+	if test {
+		eleven.Monkeys[m.TrueMonkey].Items = append(eleven.Monkeys[m.TrueMonkey].Items, *i)
+	} else {
+		eleven.Monkeys[m.FalseMonkey].Items = append(eleven.Monkeys[m.FalseMonkey].Items, *i)
+	}
+}
+
+func (m *monkey) inspect2(i *item, eleven *Eleven) {
+	m.InspectionCount++
+	i.WorryLevel = m.operate(i.WorryLevel)
 	test := i.WorryLevel%m.DivisibleBy == 0
 
 	if test {
