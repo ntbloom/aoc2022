@@ -37,10 +37,11 @@ func (eleven *Eleven) Solve(puzzle int) interface{} {
 
 func (eleven *Eleven) solve1() interface{} {
 	rounds := 20
+	divisor := big.NewInt(3)
 	for i := 0; i < rounds; i++ {
 		for _, m := range eleven.Monkeys {
 			for _, itm := range m.Items {
-				m.inspect(&itm, 3, eleven)
+				m.inspect(&itm, divisor, eleven)
 			}
 			m.Items = []item{}
 		}
@@ -53,7 +54,7 @@ func (eleven *Eleven) solve2() interface{} {
 	for i := 0; i < rounds; i++ {
 		for _, m := range eleven.Monkeys {
 			for _, itm := range m.Items {
-				m.inspect(&itm, 1, eleven)
+				m.inspect2(&itm, eleven)
 			}
 			m.Items = []item{}
 		}
@@ -157,13 +158,36 @@ func newMonkey(number int) *monkey {
 	}
 }
 
-func (m *monkey) inspect(i *item, divisor int, eleven *Eleven) {
+func (m *monkey) inspect(i *item, divisor *big.Int, eleven *Eleven) {
 	m.InspectionCount++
-	i.WorryLevel = m.operate(i.WorryLevel)
-	i.WorryLevel.Div(i.WorryLevel, big.NewInt(int64(divisor)))
+	num := big.NewInt(i.WorryLevel.Int64())
 
-	res := big.NewInt(0)
-	res.Div(i.WorryLevel, m.DivisibleBy)
+	num = m.operate(num)
+	num = num.Div(num, divisor)
+
+	i.WorryLevel = num
+
+	res := big.NewInt(num.Int64())
+	res = res.Mod(num, m.DivisibleBy)
+	pass := res.Cmp(big.NewInt(0)) == 0
+
+	if pass {
+		eleven.Monkeys[m.TrueMonkey].Items = append(eleven.Monkeys[m.TrueMonkey].Items, *i)
+	} else {
+		eleven.Monkeys[m.FalseMonkey].Items = append(eleven.Monkeys[m.FalseMonkey].Items, *i)
+	}
+}
+
+func (m *monkey) inspect2(i *item, eleven *Eleven) {
+	m.InspectionCount++
+	num := big.NewInt(i.WorryLevel.Int64())
+
+	num = m.operate(num)
+
+	i.WorryLevel = num
+
+	res := big.NewInt(num.Int64())
+	res = res.Mod(num, m.DivisibleBy)
 	pass := res.Cmp(big.NewInt(0)) == 0
 
 	if pass {

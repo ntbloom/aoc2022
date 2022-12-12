@@ -182,7 +182,6 @@ func TestElevenSolve1(t *testing.T) {
 	generateTest(11, 1, 10605, t)
 }
 
-//
-//func TestElevenSolve2(t *testing.T) {
-//	generateTest(11, 2, 2713310158, t)
-//}
+func TestElevenSolve2(t *testing.T) {
+	generateTest(11, 2, 2713310158, t)
+}
