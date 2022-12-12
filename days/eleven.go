@@ -2,22 +2,23 @@ package days
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
 
 var itemId int = 0
-var worryLevel int = 0
 
 type Eleven struct {
 	fd      *os.File
-	Monkeys map[int]*monkey
+	Monkeys []*monkey
 }
 
 func CreateEleven(fd *os.File) *Eleven {
-	return &Eleven{fd, map[int]*monkey{}}
+	return &Eleven{fd, []*monkey{}}
 }
 
 func (eleven *Eleven) Solve(puzzle int) interface{} {
@@ -33,7 +34,22 @@ func (eleven *Eleven) Solve(puzzle int) interface{} {
 
 func (eleven *Eleven) solve1() interface{} {
 	eleven.parse()
-	return nil
+	rounds := 20
+	for i := 0; i < rounds; i++ {
+		for _, m := range eleven.Monkeys {
+			for _, itm := range m.Items {
+				m.inspect(itm)
+			}
+		}
+	}
+	var inspectionCounts []int
+	for _, m := range eleven.Monkeys {
+		inspectionCounts = append(inspectionCounts, m.InspectionCount)
+	}
+	sort.Ints(inspectionCounts)
+	max, penultimate := inspectionCounts[len(inspectionCounts)-1], inspectionCounts[(len(inspectionCounts)-2)]
+	monkeyBusiness := max * penultimate
+	return monkeyBusiness
 }
 func (eleven *Eleven) solve2() interface{} {
 	return nil
@@ -45,8 +61,7 @@ func (eleven *Eleven) parse() {
 	for scanner.Scan() {
 		line := strings.Split(scanner.Text(), " ")
 		if len(line) == 1 {
-			number := currentMonkey.Number
-			eleven.Monkeys[number] = currentMonkey
+			eleven.Monkeys = append(eleven.Monkeys, currentMonkey)
 			continue
 		}
 		if line[0] == "Monkey" {
@@ -76,14 +91,8 @@ func (eleven *Eleven) parse() {
 			currentMonkey.FalseMonkey = getNumber(line[9])
 		}
 	}
-	number := currentMonkey.Number
-	eleven.Monkeys[number] = currentMonkey
+	eleven.Monkeys = append(eleven.Monkeys, currentMonkey)
 	return
-	//for _, val := range line {
-	//	fmt.Print(val)
-	//	fmt.Print(" | ")
-	//}
-	//fmt.Print("\n")
 }
 
 type item struct {
@@ -98,23 +107,31 @@ func newItem(worryLevel int) *item {
 }
 
 type monkey struct {
-	Number      int
-	Items       []*item
-	Operation   func(old, other int) int
-	DivisibleBy int
-	TrueMonkey  int
-	FalseMonkey int
+	Number          int
+	Items           []*item
+	Operation       func(old, other int) int
+	DivisibleBy     int
+	TrueMonkey      int
+	FalseMonkey     int
+	InspectionCount int
 }
 
 func newMonkey(number int) *monkey {
 	return &monkey{
-		Number:      number,
-		Items:       []*item{},
-		Operation:   nil,
-		DivisibleBy: -1,
-		TrueMonkey:  -1,
-		FalseMonkey: -1,
+		Number:          number,
+		Items:           []*item{},
+		Operation:       nil,
+		DivisibleBy:     -1,
+		TrueMonkey:      -1,
+		FalseMonkey:     -1,
+		InspectionCount: 0,
 	}
+}
+
+func (m *monkey) inspect(i *item) {
+	m.InspectionCount++
+	fmt.Println(i)
+	//panic("implement me")
 }
 
 func getNumber(str string) int {
