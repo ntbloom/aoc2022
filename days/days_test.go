@@ -167,3 +167,7 @@ func TestNineSolve1(t *testing.T) {
 func TestNineSolve2(t *testing.T) {
 	generateTest(9, 2, 36, t)
 }
+
+func TestTwelveSolve1(t *testing.T) {
+	generateTest(12, 1, 31, t)
+}
