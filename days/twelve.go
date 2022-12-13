@@ -2,6 +2,7 @@ package days
 
 import (
 	"bufio"
+	"container/heap"
 	"os"
 )
 
@@ -43,16 +44,14 @@ func (twelve *Twelve) Solve(puzzle int) interface{} {
 }
 
 func (twelve *Twelve) solve1() interface{} {
-	d := bfs{
-		stack:  []*grid{},
-		twelve: twelve,
-	}
-	solution := d.find(twelve.Start)
+	a := newAstar(twelve)
+
+	solution := a.find(twelve.Start)
 	if !solution.equal(twelve.End) {
 		panic("didn't find path!")
 	}
-	d.countToRoot(solution)
-	return d.Count
+	a.countToRoot(solution)
+	return a.Count
 }
 func (twelve *Twelve) solve2() interface{} {
 	return nil
@@ -98,6 +97,8 @@ type grid struct {
 	Neighbors []*grid
 	Parent    *grid
 	Marked    bool
+	Priority  uint8
+	Index     int
 }
 
 func (g *grid) equal(other *grid) bool {
@@ -140,33 +141,83 @@ func (twelve *Twelve) findNeighbors(g *grid) {
 	g.Neighbors = neighbors
 }
 
-type bfs struct {
-	stack  []*grid
+type priorityQueue struct {
+	queue []*grid
+}
+
+func (pq *priorityQueue) Len() int {
+	return len(pq.queue)
+}
+
+func (pq *priorityQueue) Less(i, j int) bool {
+	return pq.queue[i].Priority > pq.queue[j].Priority
+}
+
+func (pq *priorityQueue) Swap(i, j int) {
+	pq.queue[i], pq.queue[j] = pq.queue[j], pq.queue[i]
+	pq.queue[i].Index = i
+	pq.queue[j].Index = j
+}
+
+func (pq *priorityQueue) Push(x any) {
+	n := len(pq.queue)
+	item := x.(*grid)
+	item.Index = n
+	pq.queue = append(pq.queue, item)
+}
+
+func (pq *priorityQueue) Pop() any {
+	old := pq.queue
+	n := len(old)
+	item := old[n-1]
+	old[n-1] = nil
+	item.Index = -1
+	pq.queue = old[0 : n-1]
+	return item
+}
+
+func (pq *priorityQueue) update(grid *grid, priority uint8) {
+	grid.Priority = priority
+	heap.Fix(pq, grid.Index)
+}
+
+type aStar struct {
+	pq     *priorityQueue
 	twelve *Twelve
 	Count  int
 }
 
-func (b *bfs) find(g *grid) *grid {
+func newAstar(twelve *Twelve) *aStar {
+	queue := make([]*grid, twelve.Length*twelve.Width)
+	pq := &priorityQueue{queue: queue}
+	return &aStar{
+		pq:     pq,
+		twelve: twelve,
+		Count:  0,
+	}
+}
+
+func (a *aStar) find(g *grid) *grid {
 	g.Marked = true
-	if g.equal(b.twelve.End) {
+	if g.equal(a.twelve.End) {
 		return g
 	}
-	b.twelve.findNeighbors(g)
+	a.twelve.findNeighbors(g)
 	for _, val := range g.Neighbors {
 		if !val.Marked {
 			val.Parent = g
-			b.stack = append(b.stack, val)
+			a.pq.Push(val)
+			a.pq.update(val, val.Height)
 		}
 	}
-	next := b.stack[0]
-	b.stack = b.stack[1:]
-	return b.find(next)
+	next := a.pq.Pop().(*grid)
+	return a.find(next)
 }
 
-func (b *bfs) countToRoot(g *grid) {
-	if g.equal(b.twelve.Start) {
+func (a *aStar) countToRoot(g *grid) {
+	if g.equal(a.twelve.Start) {
 		return
 	}
-	b.Count++
-	b.countToRoot(g.Parent)
+	a.Count++
+	a.countToRoot(g.Parent)
 }
