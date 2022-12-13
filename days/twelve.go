@@ -3,6 +3,7 @@ package days
 import (
 	"bufio"
 	"container/heap"
+	"fmt"
 	"os"
 )
 
@@ -45,7 +46,11 @@ func (twelve *Twelve) Solve(puzzle int) interface{} {
 
 func (twelve *Twelve) solve1() interface{} {
 	a := newAstar(twelve)
-
+	defer func() {
+		if r := recover(); r != nil {
+			twelve.print()
+		}
+	}()
 	solution := a.find(twelve.Start)
 	if !solution.equal(twelve.End) {
 		panic("didn't find path!")
@@ -76,10 +81,12 @@ func (twelve *Twelve) parse() {
 			if height == Start {
 				node.Height = Lowest
 				node.Priority = node.Height
+				node.Start = true
 				twelve.Start = &node
 			}
 			if height == End {
 				node.Height = Highest
+				node.Finish = true
 				twelve.End = &node
 			}
 			row[idx] = &node
@@ -91,6 +98,33 @@ func (twelve *Twelve) parse() {
 	twelve.Length = uint8(rowCount)
 }
 
+func (twelve *Twelve) print() {
+	for idx, line := range twelve.Elevations {
+		fmt.Printf("%d: ", idx)
+		if idx < 10 {
+			fmt.Printf(" ")
+		}
+		for _, char := range line {
+			if char.Start {
+				fmt.Printf("S")
+				continue
+			}
+			if char.Finish {
+				fmt.Printf("E")
+				continue
+			}
+			if char.OnThePath {
+				fmt.Printf("@")
+				continue
+			}
+			fmt.Printf("-")
+
+		}
+		fmt.Printf("\n")
+	}
+	fmt.Printf("\n")
+}
+
 type grid struct {
 	Row       uint8
 	Col       uint8
@@ -100,6 +134,9 @@ type grid struct {
 	Marked    bool
 	Priority  uint8
 	Index     int
+	OnThePath bool
+	Start     bool
+	Finish    bool
 }
 
 func (g *grid) equal(other *grid) bool {
@@ -217,6 +254,9 @@ func (a *aStar) find(g *grid) *grid {
 }
 
 func (a *aStar) countToRoot(g *grid) {
+	if !g.Start || !g.Finish {
+		g.OnThePath = true
+	}
 	if g.equal(a.twelve.Start) {
 		return
 	}
