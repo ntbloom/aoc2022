@@ -257,10 +257,11 @@ func (a *aStar) find(g *grid) *grid {
 	}
 	a.twelve.findNeighbors(g)
 	for _, val := range g.Neighbors {
-		if !val.Marked {
+		heuristic := a.twelve.heuristic(val)
+		if !val.Marked { //|| a.twelve.heuristic(val) < a.twelve.heuristic(g) {
 			val.Parent = g
 			a.pq.Push(val)
-			a.pq.update(val, a.twelve.heuristic(val))
+			a.pq.update(val, heuristic)
 		}
 	}
 	next := a.pq.Pop().(*grid)
