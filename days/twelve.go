@@ -75,6 +75,7 @@ func (twelve *Twelve) parse() {
 			}
 			if height == Start {
 				node.Height = Lowest
+				node.Priority = node.Height
 				twelve.Start = &node
 			}
 			if height == End {
@@ -188,8 +189,9 @@ type aStar struct {
 }
 
 func newAstar(twelve *Twelve) *aStar {
-	queue := make([]*grid, twelve.Length*twelve.Width)
+	queue := make([]*grid, 0)
 	pq := &priorityQueue{queue: queue}
+	pq.Push(twelve.Start)
 	return &aStar{
 		pq:     pq,
 		twelve: twelve,
