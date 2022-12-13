@@ -77,6 +77,7 @@ func (twelve *Twelve) parse() {
 		for idx, val := range line {
 			height := int(val)
 			node := grid{
+				Letter: val,
 				Height: height,
 				Row:    int(rowCount),
 				Col:    int(idx),
@@ -116,14 +117,14 @@ func (twelve *Twelve) print() {
 				continue
 			}
 			if char.OnThePath {
-				fmt.Printf("@")
+				fmt.Printf("\u001b[31m%s\033[0m", string(char.Letter))
 				continue
 			}
-			if char.Marked {
-				fmt.Printf("+")
-				continue
-			}
-			fmt.Printf("-")
+			//if char.Marked {
+			//	fmt.Printf("+")
+			//	continue
+			//}
+			fmt.Printf("%s", string(char.Letter))
 
 		}
 		fmt.Printf("\n")
@@ -132,6 +133,7 @@ func (twelve *Twelve) print() {
 }
 
 type grid struct {
+	Letter    rune
 	Row       int
 	Col       int
 	Height    int
