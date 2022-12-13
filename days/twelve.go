@@ -8,17 +8,17 @@ import (
 	"os"
 )
 
-const Lowest uint8 = 97
-const Highest uint8 = 122
-const Start uint8 = 83
-const End uint8 = 69
+const Lowest int = 97
+const Highest int = 122
+const Start int = 83
+const End int = 69
 
 type Twelve struct {
 	Elevations [][]*grid
 	Start      *grid
 	End        *grid
-	Width      uint8
-	Length     uint8
+	Width      int
+	Length     int
 	fd         *os.File
 }
 
@@ -71,15 +71,15 @@ func (twelve *Twelve) parse() {
 	rowCount := 0
 	for scanner.Scan() {
 		line := scanner.Text()
-		twelve.Width = uint8(len(line))
+		twelve.Width = int(len(line))
 		row := make([]*grid, twelve.Width)
 
 		for idx, val := range line {
-			height := uint8(val)
+			height := int(val)
 			node := grid{
 				Height: height,
-				Row:    uint8(rowCount),
-				Col:    uint8(idx),
+				Row:    int(rowCount),
+				Col:    int(idx),
 			}
 			if height == Start {
 				node.Height = Lowest
@@ -97,7 +97,7 @@ func (twelve *Twelve) parse() {
 		rowCount++
 	}
 	twelve.Elevations = elevations
-	twelve.Length = uint8(rowCount)
+	twelve.Length = int(rowCount)
 }
 
 func (twelve *Twelve) print() {
@@ -132,9 +132,9 @@ func (twelve *Twelve) print() {
 }
 
 type grid struct {
-	Row       uint8
-	Col       uint8
-	Height    uint8
+	Row       int
+	Col       int
+	Height    int
 	Neighbors []*grid
 	Parent    *grid
 	Marked    bool
@@ -194,7 +194,7 @@ func (pq *priorityQueue) Len() int {
 }
 
 func (pq *priorityQueue) Less(i, j int) bool {
-	return pq.queue[i].Priority > pq.queue[j].Priority
+	return pq.queue[i].Priority < pq.queue[j].Priority
 }
 
 func (pq *priorityQueue) Swap(i, j int) {
