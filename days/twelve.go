@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"container/heap"
 	"fmt"
+	"math"
 	"os"
 )
 
@@ -49,6 +50,8 @@ func (twelve *Twelve) solve1() interface{} {
 	defer func() {
 		if r := recover(); r != nil {
 			twelve.print()
+		} else {
+			twelve.print()
 		}
 	}()
 	solution := a.find(twelve.Start)
@@ -80,7 +83,6 @@ func (twelve *Twelve) parse() {
 			}
 			if height == Start {
 				node.Height = Lowest
-				node.Priority = node.Height
 				node.Start = true
 				twelve.Start = &node
 			}
@@ -117,6 +119,10 @@ func (twelve *Twelve) print() {
 				fmt.Printf("@")
 				continue
 			}
+			if char.Marked {
+				fmt.Printf("+")
+				continue
+			}
 			fmt.Printf("-")
 
 		}
@@ -132,7 +138,7 @@ type grid struct {
 	Neighbors []*grid
 	Parent    *grid
 	Marked    bool
-	Priority  uint8
+	Priority  int
 	Index     int
 	OnThePath bool
 	Start     bool
@@ -214,7 +220,7 @@ func (pq *priorityQueue) Pop() any {
 	return item
 }
 
-func (pq *priorityQueue) update(grid *grid, priority uint8) {
+func (pq *priorityQueue) update(grid *grid, priority int) {
 	grid.Priority = priority
 	heap.Fix(pq, grid.Index)
 }
@@ -236,6 +242,12 @@ func newAstar(twelve *Twelve) *aStar {
 	}
 }
 
+func (twelve *Twelve) heuristic(g *grid) int {
+	rowDist := math.Abs(float64(g.Row) - float64(twelve.End.Row))
+	colDist := math.Abs(float64(g.Col) - float64(twelve.End.Col))
+	return int(rowDist + colDist)
+}
+
 func (a *aStar) find(g *grid) *grid {
 	g.Marked = true
 	if g.equal(a.twelve.End) {
@@ -246,7 +258,7 @@ func (a *aStar) find(g *grid) *grid {
 		if !val.Marked {
 			val.Parent = g
 			a.pq.Push(val)
-			a.pq.update(val, val.Height)
+			a.pq.update(val, a.twelve.heuristic(val))
 		}
 	}
 	next := a.pq.Pop().(*grid)
