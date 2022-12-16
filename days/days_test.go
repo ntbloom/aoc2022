@@ -167,3 +167,8 @@ func TestNineSolve1(t *testing.T) {
 func TestNineSolve2(t *testing.T) {
 	generateTest(9, 2, 36, t)
 }
+
+func TestTenSolve(t *testing.T) {
+	// solves both puzzles since part2 is visual
+	generateTest(10, 1, 13140, t)
+}
