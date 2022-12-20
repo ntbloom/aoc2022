@@ -8,6 +8,9 @@ build:
 test:
 	@go test $(TESTFLAGS) ./...
 
+test-short:
+	@go test $(TESTFLAGS) -short ./...
+
 run:
 	@$(EXE) -day $(day) -puzzle $(puzzle)
 

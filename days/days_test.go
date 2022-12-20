@@ -44,6 +44,9 @@ func generateTest(day int, puzzle int, expected interface{}, t *testing.T) {
 }
 
 func TestRegressions(t *testing.T) {
+	if testing.Short() {
+		t.Skip("long regression tests")
+	}
 	regressions := map[int][2]interface{}{
 		1:  {71780, 212489},
 		2:  {11150, 8295},
