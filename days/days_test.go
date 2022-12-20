@@ -12,7 +12,7 @@ import (
 	"github.com/ntbloom/aoc2022/solution"
 )
 
-func generateTest(day int, puzzle int, expected interface{}, t *testing.T) {
+func generateTestFileDescriptor(day int, puzzle int, t *testing.T) (*os.File, func()) {
 	filename, err := parser.GetFileName(day, parser.TestInputsDirectory)
 
 	if day == 9 && puzzle == 2 {
@@ -22,14 +22,20 @@ func generateTest(day int, puzzle int, expected interface{}, t *testing.T) {
 		t.Error(err)
 	}
 	fd := parser.GetFileDescriptor(filename)
-	defer func(fd *os.File) {
+
+	closed := func() {
 		err := fd.Close()
 		if err != nil {
 			fmt.Printf("Unable to close test file descriptor %s\n", fd.Name())
 		}
-	}(fd)
+	}
+	return fd, closed
+}
 
+func generateTest(day int, puzzle int, expected interface{}, t *testing.T) {
+	fd, closed := generateTestFileDescriptor(day, puzzle, t)
 	s := solution.NewSolution(day, fd)
+	defer closed()
 
 	actual := s.Solve(puzzle)
 	if actual != expected {
@@ -39,15 +45,17 @@ func generateTest(day int, puzzle int, expected interface{}, t *testing.T) {
 
 func TestRegressions(t *testing.T) {
 	regressions := map[int][2]interface{}{
-		1: {71780, 212489},
-		2: {11150, 8295},
-		3: {7701, 2644},
-		4: {513, 878},
-		5: {"SBPQRSCDF", "RGLVRCQSB"},
-		6: {1578, 2178},
-		7: {1642503, 6999588},
-		8: {1805, 444528},
-		//9: {5619, nil},
+		1:  {71780, 212489},
+		2:  {11150, 8295},
+		3:  {7701, 2644},
+		4:  {513, 878},
+		5:  {"SBPQRSCDF", "RGLVRCQSB"},
+		6:  {1578, 2178},
+		7:  {1642503, 6999588},
+		8:  {1805, 444528},
+		9:  {5619, 2376},
+		10: {15020, 15020}, // technically a textual output
+		11: {67830, 15305381442},
 	}
 	for day, solutions := range regressions {
 		for i, v := range []int{1, 2} {
@@ -171,4 +179,12 @@ func TestNineSolve2(t *testing.T) {
 func TestTenSolve(t *testing.T) {
 	// solves both puzzles since part2 is visual
 	generateTest(10, 1, 13140, t)
+}
+
+func TestElevenSolve1(t *testing.T) {
+	generateTest(11, 1, 10605, t)
+}
+
+func TestElevenSolve2(t *testing.T) {
+	generateTest(11, 2, 2713310158, t)
 }
